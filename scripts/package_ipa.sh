@@ -163,12 +163,9 @@ for f in vmlinuz-virt initramfs-virt husk-jit.js \
     fi
 done
 
-# Built-in StikJIT's helper (without it the app still installs and runs with
-# StikDebug, but its JIT setup would offer a method that can only fail), and the
-# widget that draws the download Live Activity.
-for f in "$APP/PlugIns/HuskJITHelper.appex/HuskJITHelper" \
-         "$APP/PlugIns/HuskDownloadsWidget.appex/HuskDownloadsWidget" \
-         "$APP/Frameworks/StikJIT.framework/StikJIT" \
+# StikJIT.framework stays embedded for the helper sources. The helper and the
+# download widget are not packaged: each app extension registers its own App ID.
+for f in "$APP/Frameworks/StikJIT.framework/StikJIT" \
          "$APP/Frameworks/StikJIT.framework/Info.plist"; do
     if [ ! -f "$f" ]; then
         echo "  MISSING  ${f#$APP/}" >&2

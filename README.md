@@ -105,10 +105,12 @@ Both the translation layer and Emulation need JIT, which on iOS comes from a
 debugger. Husk can get it in several ways, and walks you through each one
 (Settings › JIT & Sideload):
 
-- **Built-in StikJIT** (iOS 26 and later): Husk turns JIT on itself, with no
-  second app. On iOS 27 it pairs with your iPhone from Settings, with no
-  computer. See [docs/06-built-in-jit.md](docs/06-built-in-jit.md).
-- **StikDebug**, installed alongside Husk.
+- **StikDebug**, installed alongside Husk. This build does not embed the
+  built-in JIT helper or the download Live Activity. Those are app extensions,
+  and each one registers another App ID. Sideloading this IPA registers one:
+  `com.husk.app`.
+- **Built-in StikJIT** is described in [docs/06-built-in-jit.md](docs/06-built-in-jit.md).
+  It needs the `HuskJITHelper` extension, which this tree does not ship.
 - **TrollStore or a Dopamine jailbreak** ("Allow JIT in Apps"), on iOS
   versions before 26 only. From iOS 26 only a debugger can grant JIT.
 

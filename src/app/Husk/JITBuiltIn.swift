@@ -51,6 +51,11 @@ enum HuskBuiltInJIT {
         if getenv("LC_HOME_PATH") != nil {
             return "Built-in JIT is unavailable inside LiveContainer. Use StikDebug instead."
         }
+        // The helper is an app extension, so shipping it registers a second App ID.
+        // This build leaves it out. StikDebug and TrollStore still enable JIT.
+        if helperIdentifier == nil {
+            return "Built-in JIT is not in this build. Use StikDebug or TrollStore instead."
+        }
         return nil
 #endif
     }

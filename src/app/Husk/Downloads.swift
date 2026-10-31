@@ -739,8 +739,9 @@ private enum Live {
             let auth = ActivityAuthorizationInfo().areActivitiesEnabled
             let widget = Bundle.main.builtInPlugInsURL.map { FileManager.default.fileExists(atPath: $0.appendingPathComponent("HuskDownloadsWidget.appex").path) } ?? false
             if !logged { logged = true; HuskLog.log("downloads", "Live Activity: allowed \(auth), widget extension installed \(widget)") }
-            Downloads.shared.liveActivitiesOff = !auth
-            guard auth else { return }
+            // The widget is an app extension and costs its own App ID, so this build does not ship it.
+            Downloads.shared.liveActivitiesOff = !auth || !widget
+            guard auth, widget else { return }
             do {
                 let a = try Activity.request(attributes: HuskDownloadAttributes(), contentState: state, pushType: nil)
                 activity = a
