@@ -10,10 +10,9 @@ options:
 
 settings:
   base:
-    # One bundle identifier, so a sideload registers one App ID. The JIT helper
-    # and download Live Activity used to be embedded extensions (.JITHelper and
-    # .Downloads) and each one cost another App ID. Change this, not
-    # PRODUCT_BUNDLE_IDENTIFIER.
+    # The app and its JIT helper follow this together: the helper's identifier
+    # has to sit under the app's, and it is a second App ID. The download Live
+    # Activity extension stays out. Change this, not PRODUCT_BUNDLE_IDENTIFIER.
     HUSK_BUNDLE_IDENTIFIER: com.husk.app
     # The app's entitlements only. A signed development build has to drop
     # dynamic-codesigning, which Apple will not provision.
@@ -118,9 +117,9 @@ targets:
           # On-device pairing for Built-in StikJIT, built by scripts/build_rppairing_ios.sh.
           - "-lhusk_rppairing"
     dependencies:
-      # No app extensions. HuskJITHelper and HuskDownloadsWidget each registered
-      # their own App ID (com.husk.app.JITHelper and com.husk.app.Downloads).
-      # JIT uses StikDebug or TrollStore; downloads do not show a Live Activity.
+      # Built-in StikJIT's debugger process. Embedded into PlugIns/. This is a
+      # second App ID; a process cannot debug itself, so JIT needs this extension.
+      - target: HuskJITHelper
       # Built by scripts/build_ios.sh. Embedded and signed into the bundle.
       - framework: ../../build/ios-arm64/lib/libqemu-aarch64-softmmu.dylib
         embed: true
@@ -264,3 +263,31 @@ targets:
             codesign --force --sign "$EXPANDED_CODE_SIGN_IDENTITY" --timestamp=none "$DST"
           fi
         basedOnDependencyAnalysis: false
+
+  # Built-in StikJIT's debugger (docs/06-built-in-jit.md). A process cannot
+  # synchronously debug itself, so StikJIT runs here and attaches to the app.
+  # iOS 26 only: the app falls back to StikDebug below that.
+  HuskJITHelper:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: HuskJITHelper
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(HUSK_BUNDLE_IDENTIFIER).JITHelper
+        INFOPLIST_FILE: HuskJITHelper/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        APPLICATION_EXTENSION_API_ONLY: YES
+        CODE_SIGN_STYLE: Automatic
+        TARGETED_DEVICE_FAMILY: "1,2"
+        # StikJIT.framework, in the app's Frameworks (the app target's Embed StikJIT).
+        LD_RUNPATH_SEARCH_PATHS:
+          - "$(inherited)"
+          - "@executable_path/../../Frameworks"
+    dependencies:
+      # StikJIT 1.9.0 (MPL-2.0, with idevice under MIT), from
+      # github.com/StikDebug/StikJIT/releases/tag/1.9.0, unmodified. Linked
+      # here and embedded by the app target's Embed StikJIT.
+      - framework: Frameworks/StikJIT.xcframework
+        embed: false

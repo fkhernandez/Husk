@@ -163,9 +163,10 @@ for f in vmlinuz-virt initramfs-virt husk-jit.js \
     fi
 done
 
-# StikJIT.framework stays embedded for the helper sources. The helper and the
-# download widget are not packaged: each app extension registers its own App ID.
-for f in "$APP/Frameworks/StikJIT.framework/StikJIT" \
+# Built-in JIT's helper. It is an app extension, so it registers a second App
+# ID. The download widget is not packaged.
+for f in "$APP/PlugIns/HuskJITHelper.appex/HuskJITHelper" \
+         "$APP/Frameworks/StikJIT.framework/StikJIT" \
          "$APP/Frameworks/StikJIT.framework/Info.plist"; do
     if [ ! -f "$f" ]; then
         echo "  MISSING  ${f#$APP/}" >&2
